@@ -133,7 +133,9 @@ const AdminPedidos = () => {
   const [pedidos, setPedidos] = useState<PdfRgPedido[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialStatus = urlParams.get('status') || 'all';
+  const [statusFilter, setStatusFilter] = useState<string>(initialStatus);
   const [selectedPedido, setSelectedPedido] = useState<PdfRgPedido | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [total, setTotal] = useState(0);
