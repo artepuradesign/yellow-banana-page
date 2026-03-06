@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SimpleCounter } from '@/components/ui/simple-counter';
 import { useNavigate } from 'react-router-dom';
@@ -13,9 +13,15 @@ import {
   Ticket,
   Settings,
   Grid3X3,
-  UserPlus
+  UserPlus,
+  ClipboardList,
+  CheckCircle,
+  PackageCheck,
+  ShoppingCart
 } from 'lucide-react';
 import { type DashboardStats } from '@/hooks/useApiDashboardAdmin';
+import { pdfRgService } from '@/services/pdfRgService';
+import { editarPdfService } from '@/services/editarPdfService';
 
 interface UnifiedAdminStatsCardsProps {
   dashboardStats: DashboardStats | null;
@@ -23,6 +29,48 @@ interface UnifiedAdminStatsCardsProps {
 
 const UnifiedAdminStatsCards: React.FC<UnifiedAdminStatsCardsProps> = ({ dashboardStats }) => {
   const navigate = useNavigate();
+  const [pedidoStats, setPedidoStats] = useState({ pendentes: 0, aprovados: 0, finalizados: 0, total: 0, total_valor: 0 });
+
+  useEffect(() => {
+    const loadPedidoStats = async () => {
+      try {
+        // Fetch stats from both pdf-rg and editar-pdf
+        const [pdfRes, editRes] = await Promise.all([
+          pdfRgService.listar({ limit: 1000 }).catch(() => ({ success: false, data: null })),
+          editarPdfService.stats().catch(() => ({ success: false, data: null })),
+        ]);
+
+        let pendentes = 0, aprovados = 0, finalizados = 0, total = 0, totalValor = 0;
+
+        // PDF RG stats from listing
+        if (pdfRes.success && pdfRes.data?.data) {
+          const pedidos = pdfRes.data.data;
+          pedidos.forEach((p: any) => {
+            total++;
+            totalValor += Number(p.preco_pago || 0);
+            if (p.status === 'pagamento_confirmado') pendentes++;
+            else if (p.status === 'em_confeccao') aprovados++;
+            else if (p.status === 'entregue') finalizados++;
+          });
+        }
+
+        // Editar PDF stats
+        if (editRes.success && editRes.data) {
+          const s = editRes.data;
+          pendentes += Number(s.pendentes || 0);
+          aprovados += Number(s.aprovados || 0);
+          finalizados += Number(s.finalizados || 0);
+          total += Number(s.total || 0);
+          totalValor += Number(s.total_valor || 0);
+        }
+
+        setPedidoStats({ pendentes, aprovados, finalizados, total, total_valor: totalValor });
+      } catch (e) {
+        console.warn('Erro ao carregar stats de pedidos:', e);
+      }
+    };
+    loadPedidoStats();
+  }, []);
 
   const formatCurrency = (value: number) => {
     return value.toLocaleString('pt-BR', {
@@ -306,8 +354,56 @@ const UnifiedAdminStatsCards: React.FC<UnifiedAdminStatsCardsProps> = ({ dashboa
     );
   };
 
+  const pedidosData = [
+    {
+      title: "Pedidos Pendentes",
+      rawValue: pedidoStats.pendentes,
+      isCurrency: false,
+      icon: ClipboardList,
+      bgColor: "bg-amber-500/10",
+      iconColor: "text-amber-600 dark:text-amber-400",
+      description: "Aguardando produção",
+      path: "/dashboard/admin/pedidos"
+    },
+    {
+      title: "Pedidos Aprovados",
+      rawValue: pedidoStats.aprovados,
+      isCurrency: false,
+      icon: CheckCircle,
+      bgColor: "bg-blue-500/10",
+      iconColor: "text-blue-600 dark:text-blue-400",
+      description: "Em confecção",
+      path: "/dashboard/admin/pedidos"
+    },
+    {
+      title: "Pedidos Finalizados",
+      rawValue: pedidoStats.finalizados,
+      isCurrency: false,
+      icon: PackageCheck,
+      bgColor: "bg-emerald-500/10",
+      iconColor: "text-emerald-600 dark:text-emerald-400",
+      description: "Entregues ao cliente",
+      path: "/dashboard/admin/pedidos"
+    },
+    {
+      title: "Total de Pedidos",
+      rawValue: pedidoStats.total,
+      displayValue: `${pedidoStats.total} / ${formatCurrency(pedidoStats.total_valor)}`,
+      isCurrency: false,
+      icon: ShoppingCart,
+      bgColor: "bg-violet-500/10",
+      iconColor: "text-violet-600 dark:text-violet-400",
+      description: "Quantidade / Valor total",
+      path: "/dashboard/admin/pedidos"
+    }
+  ];
+
   return (
     <div className="space-y-4">
+      {/* Linha 0 - Pedidos */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+        {pedidosData.map((stat, i) => renderCard(stat, i + 100))}
+      </div>
       {/* Linha 1 - Financeiro */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         {financialData.map((stat, i) => renderCard(stat, i))}
