@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../controllers/EditarPdfController.php';
+require_once __DIR__ . '/../controllers/PdfPersonalizadoController.php';
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 require_once __DIR__ . '/../middleware/CorsMiddleware.php';
 require_once __DIR__ . '/../utils/Response.php';

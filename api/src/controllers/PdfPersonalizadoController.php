@@ -1,14 +1,14 @@
 <?php
 require_once __DIR__ . '/../utils/Response.php';
-require_once __DIR__ . '/../models/EditarPdf.php';
+require_once __DIR__ . '/../models/PdfPersonalizado.php';
 
-class EditarPdfController {
+class PdfPersonalizadoController {
     private $db;
     private $model;
 
     public function __construct($db) {
         $this->db = $db;
-        $this->model = new EditarPdf($db);
+        $this->model = new PdfPersonalizado($db);
     }
 
     public function criar() {
