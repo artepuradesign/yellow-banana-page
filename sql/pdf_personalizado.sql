@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS editar_pdf_pedidos (
+CREATE TABLE IF NOT EXISTS pdf_personalizado (
     id INT AUTO_INCREMENT PRIMARY KEY,
     module_id INT NOT NULL DEFAULT 0,
     user_id INT NULL,
