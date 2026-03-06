@@ -29,9 +29,9 @@ $path = preg_replace('#^/api#', '', $path);
 
 switch ($method) {
     case 'GET':
-        if (preg_match('/\/editar-pdf\/stats$/', $path)) {
+        if (preg_match('/\/pdf-personalizado\/stats$/', $path)) {
             $controller->stats();
-        } elseif (preg_match('/\/editar-pdf\/(\d+)$/', $path, $matches)) {
+        } elseif (preg_match('/\/pdf-personalizado\/(\d+)$/', $path, $matches)) {
             $_GET['id'] = $matches[1];
             $controller->obter();
         } else {
@@ -40,7 +40,7 @@ switch ($method) {
         break;
 
     case 'POST':
-        if (strpos($path, '/editar-pdf/status') !== false) {
+        if (strpos($path, '/pdf-personalizado/status') !== false) {
             $controller->atualizarStatus();
         } else {
             $controller->criar();
@@ -48,7 +48,7 @@ switch ($method) {
         break;
 
     case 'DELETE':
-        if (preg_match('/\/editar-pdf\/(\d+)$/', $path, $matches)) {
+        if (preg_match('/\/pdf-personalizado\/(\d+)$/', $path, $matches)) {
             $_GET['id'] = $matches[1];
             $controller->deletar();
         } else {

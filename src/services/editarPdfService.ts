@@ -61,7 +61,7 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
 
 export const editarPdfService = {
   async criar(payload: Record<string, any>) {
-    return apiRequest<{ id: number }>('/editar-pdf', {
+    return apiRequest<{ id: number }>('/pdf-personalizado', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -74,28 +74,28 @@ export const editarPdfService = {
     if (params.user_id !== undefined) qs.set('user_id', String(params.user_id));
     if (params.status !== undefined) qs.set('status', params.status);
     if (params.search) qs.set('search', params.search);
-    const endpoint = `/editar-pdf${qs.toString() ? `?${qs.toString()}` : ''}`;
+    const endpoint = `/pdf-personalizado${qs.toString() ? `?${qs.toString()}` : ''}`;
     return apiRequest<{ data: EditarPdfPedido[]; pagination: { total: number; limit: number; offset: number } }>(endpoint);
   },
 
   async obter(id: number) {
-    return apiRequest<EditarPdfPedido>(`/editar-pdf/${id}`);
+    return apiRequest<EditarPdfPedido>(`/pdf-personalizado/${id}`);
   },
 
   async atualizarStatus(id: number, status: EditarPdfStatus, extraData?: { pdf_entrega_base64?: string; pdf_entrega_nome?: string }) {
-    return apiRequest<{ id: number; status: EditarPdfStatus }>('/editar-pdf/status', {
+    return apiRequest<{ id: number; status: EditarPdfStatus }>('/pdf-personalizado/status', {
       method: 'POST',
       body: JSON.stringify({ id, status, ...extraData }),
     });
   },
 
   async deletar(id: number) {
-    return apiRequest<{ id: number }>(`/editar-pdf/${id}`, {
+    return apiRequest<{ id: number }>(`/pdf-personalizado/${id}`, {
       method: 'DELETE',
     });
   },
 
   async stats() {
-    return apiRequest<{ pendentes: number; aprovados: number; finalizados: number; total: number; total_valor: number }>('/editar-pdf/stats');
+    return apiRequest<{ pendentes: number; aprovados: number; finalizados: number; total: number; total_valor: number }>('/pdf-personalizado/stats');
   },
 };

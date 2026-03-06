@@ -20,8 +20,8 @@ import SimpleTitleBar from '@/components/dashboard/SimpleTitleBar';
 import LoadingScreen from '@/components/layout/LoadingScreen';
 import ScrollToTop from '@/components/ui/scroll-to-top';
 
-const MODULE_TITLE = 'EDITAR PDF';
-const MODULE_ROUTE = '/dashboard/editar-pdf';
+const MODULE_TITLE = 'PDF PERSONALIZADO';
+const MODULE_ROUTE = '/dashboard/pdf-personalizado';
 const MODULE_ID = 173;
 
 const STATUS_LABELS: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
@@ -223,7 +223,7 @@ const EditarPdf = () => {
             module_name: MODULE_TITLE,
             module_id: currentModule?.id || MODULE_ID,
             saldo_usado: saldoUsado,
-            source: 'editar-pdf',
+            source: 'pdf-personalizado',
             timestamp: new Date().toISOString(),
           },
         });
