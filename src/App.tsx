@@ -167,7 +167,7 @@ import LoginHotmail from '@/pages/dashboard/LoginHotmail';
 import LoginGmail from '@/pages/dashboard/LoginGmail';
 import LoginRenner from '@/pages/dashboard/LoginRenner';
 import PdfRg from '@/pages/dashboard/PdfRg';
-import EditarPdf from '@/pages/dashboard/EditarPdf';
+import PdfPersonalizado from '@/pages/dashboard/PdfPersonalizado';
 import MeusPedidos from '@/pages/dashboard/MeusPedidos';
 import ConsultarCpfHistorico from '@/pages/dashboard/ConsultarCpfHistorico';
 import Preferencias from '@/pages/dashboard/Preferencias';
@@ -369,7 +369,7 @@ function App() {
                     <Route path="/dashboard/login-gmail" element={<DashboardLayout><LoginGmail /></DashboardLayout>} />
                     <Route path="/dashboard/login-renner" element={<DashboardLayout><LoginRenner /></DashboardLayout>} />
                     <Route path="/dashboard/pdf-rg" element={<DashboardLayout><PdfRg /></DashboardLayout>} />
-                    <Route path="/dashboard/pdf-personalizado" element={<DashboardLayout><EditarPdf /></DashboardLayout>} />
+                    <Route path="/dashboard/pdf-personalizado" element={<DashboardLayout><PdfPersonalizado /></DashboardLayout>} />
                     <Route path="/dashboard/meus-pedidos" element={<DashboardLayout><MeusPedidos /></DashboardLayout>} />
                     <Route path="/dashboard/qrcode" element={<DashboardLayout><QRCodePage /></DashboardLayout>} />
                     <Route path="/dashboard/qrcode-rg-6m" element={<DashboardLayout><QRCodeRg6m /></DashboardLayout>} />

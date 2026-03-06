@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { type DashboardStats } from '@/hooks/useApiDashboardAdmin';
 import { pdfRgService } from '@/services/pdfRgService';
-import { editarPdfService } from '@/services/editarPdfService';
+import { editarPdfService } from '@/services/pdfPersonalizadoService';
 
 interface UnifiedAdminStatsCardsProps {
   dashboardStats: DashboardStats | null;

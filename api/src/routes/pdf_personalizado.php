@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../controllers/EditarPdfController.php';
+require_once __DIR__ . '/../controllers/PdfPersonalizadoController.php';
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 require_once __DIR__ . '/../middleware/CorsMiddleware.php';
 require_once __DIR__ . '/../utils/Response.php';
@@ -22,7 +22,7 @@ if (!$authMiddleware->handle()) {
     exit;
 }
 
-$controller = new EditarPdfController($db);
+$controller = new PdfPersonalizadoController($db);
 $method = $_SERVER['REQUEST_METHOD'];
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $path = preg_replace('#^/api#', '', $path);

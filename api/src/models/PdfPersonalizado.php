@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/BaseModel.php';
 
-class EditarPdf extends BaseModel {
+class PdfPersonalizado extends BaseModel {
     protected $table = 'pdf_personalizado';
 
     private $validStatuses = ['realizado', 'pagamento_confirmado', 'em_confeccao', 'entregue'];
