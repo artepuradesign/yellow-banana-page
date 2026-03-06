@@ -589,6 +589,12 @@ try {
         exit();
     }
 
+    // PDF Personalizado - Módulo 173
+    if (strpos($endpoint, '/pdf-personalizado') === 0) {
+        include __DIR__ . '/src/routes/pdf_personalizado.php';
+        exit();
+    }
+
     // Editáveis RG - Módulo 85
     if (strpos($endpoint, '/editaveis-rg') === 0) {
         include __DIR__ . '/src/routes/editaveis_rg.php';
