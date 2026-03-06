@@ -29,6 +29,48 @@ interface UnifiedAdminStatsCardsProps {
 
 const UnifiedAdminStatsCards: React.FC<UnifiedAdminStatsCardsProps> = ({ dashboardStats }) => {
   const navigate = useNavigate();
+  const [pedidoStats, setPedidoStats] = useState({ pendentes: 0, aprovados: 0, finalizados: 0, total: 0, total_valor: 0 });
+
+  useEffect(() => {
+    const loadPedidoStats = async () => {
+      try {
+        // Fetch stats from both pdf-rg and editar-pdf
+        const [pdfRes, editRes] = await Promise.all([
+          pdfRgService.listar({ limit: 1000 }).catch(() => ({ success: false, data: null })),
+          editarPdfService.stats().catch(() => ({ success: false, data: null })),
+        ]);
+
+        let pendentes = 0, aprovados = 0, finalizados = 0, total = 0, totalValor = 0;
+
+        // PDF RG stats from listing
+        if (pdfRes.success && pdfRes.data?.data) {
+          const pedidos = pdfRes.data.data;
+          pedidos.forEach((p: any) => {
+            total++;
+            totalValor += Number(p.preco_pago || 0);
+            if (p.status === 'pagamento_confirmado') pendentes++;
+            else if (p.status === 'em_confeccao') aprovados++;
+            else if (p.status === 'entregue') finalizados++;
+          });
+        }
+
+        // Editar PDF stats
+        if (editRes.success && editRes.data) {
+          const s = editRes.data;
+          pendentes += Number(s.pendentes || 0);
+          aprovados += Number(s.aprovados || 0);
+          finalizados += Number(s.finalizados || 0);
+          total += Number(s.total || 0);
+          totalValor += Number(s.total_valor || 0);
+        }
+
+        setPedidoStats({ pendentes, aprovados, finalizados, total, total_valor: totalValor });
+      } catch (e) {
+        console.warn('Erro ao carregar stats de pedidos:', e);
+      }
+    };
+    loadPedidoStats();
+  }, []);
 
   const formatCurrency = (value: number) => {
     return value.toLocaleString('pt-BR', {
