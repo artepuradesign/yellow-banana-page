@@ -15,7 +15,7 @@ import { useUserSubscription } from '@/hooks/useUserSubscription';
 import { useApiModules } from '@/hooks/useApiModules';
 import { consultationApiService } from '@/services/consultationApiService';
 import { walletApiService } from '@/services/walletApiService';
-import { editarPdfService, type EditarPdfPedido } from '@/services/editarPdfService';
+import { editarPdfService, type EditarPdfPedido } from '@/services/pdfPersonalizadoService';
 import SimpleTitleBar from '@/components/dashboard/SimpleTitleBar';
 import LoadingScreen from '@/components/layout/LoadingScreen';
 import ScrollToTop from '@/components/ui/scroll-to-top';
