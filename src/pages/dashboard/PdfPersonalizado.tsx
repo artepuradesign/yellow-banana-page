@@ -178,6 +178,7 @@ const EditarPdf = () => {
         preco_pago: finalPrice,
         desconto_aplicado: discount,
         module_id: currentModule?.id || MODULE_ID,
+        user_id: user?.id ? Number(user.id) : null,
       };
 
       for (let i = 0; i < formData.anexos.length; i++) {
