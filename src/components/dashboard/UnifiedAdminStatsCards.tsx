@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SimpleCounter } from '@/components/ui/simple-counter';
 import { useNavigate } from 'react-router-dom';
@@ -13,9 +13,15 @@ import {
   Ticket,
   Settings,
   Grid3X3,
-  UserPlus
+  UserPlus,
+  ClipboardList,
+  CheckCircle,
+  PackageCheck,
+  ShoppingCart
 } from 'lucide-react';
 import { type DashboardStats } from '@/hooks/useApiDashboardAdmin';
+import { pdfRgService } from '@/services/pdfRgService';
+import { editarPdfService } from '@/services/editarPdfService';
 
 interface UnifiedAdminStatsCardsProps {
   dashboardStats: DashboardStats | null;
