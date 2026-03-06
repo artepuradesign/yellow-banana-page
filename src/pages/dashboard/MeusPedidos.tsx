@@ -5,7 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { pdfRgService, PdfRgPedido, PdfRgStatus } from '@/services/pdfRgService';
-import { Eye, Download, Loader2, Package, DollarSign, Hammer, CheckCircle, ClipboardList, Upload, FileDown } from 'lucide-react';
+import { editarPdfService, EditarPdfPedido, EditarPdfStatus } from '@/services/pdfPersonalizadoService';
+import { Eye, Download, Loader2, Package, DollarSign, Hammer, CheckCircle, ClipboardList, Upload, FileDown, FileText } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardTitleCard from '@/components/dashboard/DashboardTitleCard';
 import { useNavigate } from 'react-router-dom';
@@ -52,7 +53,36 @@ const formatTime = (dateString: string | null) => {
 
 const getStatusIndex = (status: PdfRgStatus) => STATUS_ORDER.indexOf(status);
 
-const getStepTimestamp = (pedido: PdfRgPedido, step: PdfRgStatus): string | null => {
+type UnifiedPedido = {
+  type: 'pdf-rg' | 'pdf-personalizado';
+  id: number;
+  status: PdfRgStatus;
+  preco_pago: number | string;
+  created_at: string;
+  realizado_at: string | null;
+  pagamento_confirmado_at: string | null;
+  em_confeccao_at: string | null;
+  entregue_at: string | null;
+  pdf_entrega_base64?: string | null;
+  pdf_entrega_nome?: string | null;
+  anexo1_nome?: string | null;
+  anexo2_nome?: string | null;
+  anexo3_nome?: string | null;
+  // PDF RG specific
+  cpf?: string;
+  nome?: string;
+  dt_nascimento?: string;
+  naturalidade?: string;
+  filiacao_mae?: string;
+  filiacao_pai?: string;
+  diretor?: string;
+  qr_plan?: string;
+  // PDF Personalizado specific
+  nome_solicitante?: string;
+  descricao_alteracoes?: string;
+};
+
+const getStepTimestamp = (pedido: UnifiedPedido, step: PdfRgStatus): string | null => {
   const map: Record<PdfRgStatus, string | null> = {
     realizado: pedido.realizado_at,
     pagamento_confirmado: pedido.pagamento_confirmado_at,
@@ -62,7 +92,7 @@ const getStepTimestamp = (pedido: PdfRgPedido, step: PdfRgStatus): string | null
   return map[step];
 };
 
-const StatusTracker = ({ pedido }: { pedido: PdfRgPedido }) => {
+const StatusTracker = ({ pedido }: { pedido: UnifiedPedido }) => {
   const currentIdx = getStatusIndex(pedido.status);
 
   return (
@@ -117,19 +147,77 @@ const StatusTracker = ({ pedido }: { pedido: PdfRgPedido }) => {
 const MeusPedidos = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [pedidos, setPedidos] = useState<PdfRgPedido[]>([]);
+  const [pedidos, setPedidos] = useState<UnifiedPedido[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPedido, setSelectedPedido] = useState<PdfRgPedido | null>(null);
+  const [selectedPedido, setSelectedPedido] = useState<UnifiedPedido | null>(null);
   const [showModal, setShowModal] = useState(false);
 
   const loadPedidos = useCallback(async () => {
     if (!user?.id) return;
     setLoading(true);
     try {
-      const res = await pdfRgService.listar({ limit: 50, user_id: Number(user.id) });
-      if (res.success && res.data) {
-        setPedidos(res.data.data || []);
+      const [resRg, resPersonalizado] = await Promise.all([
+        pdfRgService.listar({ limit: 50, user_id: Number(user.id) }),
+        editarPdfService.listar({ limit: 50, user_id: Number(user.id) }),
+      ]);
+
+      const allPedidos: UnifiedPedido[] = [];
+
+      if (resRg.success && resRg.data?.data) {
+        resRg.data.data.forEach((p: PdfRgPedido) => {
+          allPedidos.push({
+            type: 'pdf-rg',
+            id: p.id,
+            status: p.status,
+            preco_pago: p.preco_pago,
+            created_at: p.created_at,
+            realizado_at: p.realizado_at,
+            pagamento_confirmado_at: p.pagamento_confirmado_at,
+            em_confeccao_at: p.em_confeccao_at,
+            entregue_at: p.entregue_at,
+            pdf_entrega_base64: p.pdf_entrega_base64,
+            pdf_entrega_nome: p.pdf_entrega_nome,
+            anexo1_nome: p.anexo1_nome,
+            anexo2_nome: p.anexo2_nome,
+            anexo3_nome: p.anexo3_nome,
+            cpf: p.cpf,
+            nome: p.nome,
+            dt_nascimento: p.dt_nascimento,
+            naturalidade: p.naturalidade,
+            filiacao_mae: p.filiacao_mae,
+            filiacao_pai: p.filiacao_pai,
+            diretor: p.diretor,
+            qr_plan: p.qr_plan,
+          });
+        });
       }
+
+      if (resPersonalizado.success && resPersonalizado.data?.data) {
+        resPersonalizado.data.data.forEach((p: EditarPdfPedido) => {
+          allPedidos.push({
+            type: 'pdf-personalizado',
+            id: p.id,
+            status: p.status,
+            preco_pago: p.preco_pago,
+            created_at: p.created_at,
+            realizado_at: p.realizado_at,
+            pagamento_confirmado_at: p.pagamento_confirmado_at,
+            em_confeccao_at: p.em_confeccao_at,
+            entregue_at: p.entregue_at,
+            pdf_entrega_base64: p.pdf_entrega_base64,
+            pdf_entrega_nome: p.pdf_entrega_nome,
+            anexo1_nome: p.anexo1_nome,
+            anexo2_nome: p.anexo2_nome,
+            anexo3_nome: p.anexo3_nome,
+            nome_solicitante: p.nome_solicitante,
+            descricao_alteracoes: p.descricao_alteracoes,
+          });
+        });
+      }
+
+      // Sort by created_at descending
+      allPedidos.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      setPedidos(allPedidos);
     } catch {
       toast.error('Erro ao carregar pedidos');
     } finally {
@@ -141,19 +229,53 @@ const MeusPedidos = () => {
     loadPedidos();
   }, [loadPedidos]);
 
-  const handleView = async (pedido: PdfRgPedido) => {
+  const handleView = async (pedido: UnifiedPedido) => {
     try {
-      const res = await pdfRgService.obter(pedido.id);
-      if (res.success && res.data) {
-        setSelectedPedido(res.data);
-        setShowModal(true);
+      if (pedido.type === 'pdf-rg') {
+        const res = await pdfRgService.obter(pedido.id);
+        if (res.success && res.data) {
+          const p = res.data;
+          setSelectedPedido({
+            ...pedido,
+            pdf_entrega_base64: p.pdf_entrega_base64,
+            pdf_entrega_nome: p.pdf_entrega_nome,
+            anexo1_nome: p.anexo1_nome,
+            anexo2_nome: p.anexo2_nome,
+            anexo3_nome: p.anexo3_nome,
+            cpf: p.cpf,
+            nome: p.nome,
+            dt_nascimento: p.dt_nascimento,
+            naturalidade: p.naturalidade,
+            filiacao_mae: p.filiacao_mae,
+            filiacao_pai: p.filiacao_pai,
+            diretor: p.diretor,
+            qr_plan: p.qr_plan,
+          });
+          setShowModal(true);
+        }
+      } else {
+        const res = await editarPdfService.obter(pedido.id);
+        if (res.success && res.data) {
+          const p = res.data;
+          setSelectedPedido({
+            ...pedido,
+            pdf_entrega_base64: p.pdf_entrega_base64,
+            pdf_entrega_nome: p.pdf_entrega_nome,
+            anexo1_nome: p.anexo1_nome,
+            anexo2_nome: p.anexo2_nome,
+            anexo3_nome: p.anexo3_nome,
+            nome_solicitante: p.nome_solicitante,
+            descricao_alteracoes: p.descricao_alteracoes,
+          });
+          setShowModal(true);
+        }
       }
     } catch {
       toast.error('Erro ao carregar detalhes');
     }
   };
 
-  const handleDownload = (pedido: PdfRgPedido) => {
+  const handleDownload = (pedido: UnifiedPedido) => {
     if (!pedido.pdf_entrega_base64 || !pedido.pdf_entrega_nome) {
       toast.error('PDF ainda não disponível');
       return;
@@ -162,6 +284,14 @@ const MeusPedidos = () => {
     link.href = pedido.pdf_entrega_base64;
     link.download = pedido.pdf_entrega_nome;
     link.click();
+  };
+
+  const getTypeLabel = (type: string) => {
+    return type === 'pdf-rg' ? 'PDF de RG' : 'PDF Personalizado';
+  };
+
+  const getTypeBadgeClass = (type: string) => {
+    return type === 'pdf-rg' ? 'bg-violet-500/10 text-violet-600 border-violet-500/20' : 'bg-amber-500/10 text-amber-600 border-amber-500/20';
   };
 
   return (
@@ -186,12 +316,16 @@ const MeusPedidos = () => {
       ) : (
         <div className="space-y-4">
           {pedidos.map((p) => (
-            <Card key={p.id} className="overflow-hidden">
+            <Card key={`${p.type}-${p.id}`} className="overflow-hidden">
               <CardContent className="p-0">
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b bg-muted/30">
                   <div className="flex items-center gap-3">
                     <span className="font-mono font-bold text-sm">Pedido #{p.id}</span>
+                    <Badge variant="outline" className={getTypeBadgeClass(p.type)}>
+                      <FileText className="h-3 w-3 mr-1" />
+                      {getTypeLabel(p.type)}
+                    </Badge>
                     <Badge className={statusBadgeColors[p.status] || 'bg-muted'}>
                       {statusLabels[p.status] || p.status}
                     </Badge>
@@ -204,15 +338,25 @@ const MeusPedidos = () => {
                 {/* Progress tracker */}
                 <StatusTracker pedido={p} />
 
-                {/* Info & Actions - responsive */}
+                {/* Info & Actions */}
                 <div className="px-4 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                   <div className="text-sm text-muted-foreground grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-1">
-                    <p>CPF: <span className="font-mono text-foreground">{p.cpf}</span></p>
-                    {p.nome && <p>Nome: <span className="text-foreground">{p.nome}</span></p>}
-                    <p>Valor: <span className="text-foreground font-medium">R$ {Number(p.preco_pago || 0).toFixed(2)}</span></p>
-                    {p.dt_nascimento && <p className="hidden md:block">Nascimento: <span className="text-foreground">{formatDateBR(p.dt_nascimento)}</span></p>}
-                    {p.naturalidade && <p className="hidden md:block">Naturalidade: <span className="text-foreground">{p.naturalidade}</span></p>}
-                    {p.diretor && <p className="hidden md:block">Diretor: <span className="text-foreground">{p.diretor}</span></p>}
+                    {p.type === 'pdf-rg' ? (
+                      <>
+                        {p.cpf && <p>CPF: <span className="font-mono text-foreground">{p.cpf}</span></p>}
+                        {p.nome && <p>Nome: <span className="text-foreground">{p.nome}</span></p>}
+                        <p>Valor: <span className="text-foreground font-medium">R$ {Number(p.preco_pago || 0).toFixed(2)}</span></p>
+                        {p.dt_nascimento && <p className="hidden md:block">Nascimento: <span className="text-foreground">{formatDateBR(p.dt_nascimento)}</span></p>}
+                      </>
+                    ) : (
+                      <>
+                        {p.nome_solicitante && <p>Solicitante: <span className="text-foreground">{p.nome_solicitante}</span></p>}
+                        <p>Valor: <span className="text-foreground font-medium">R$ {Number(p.preco_pago || 0).toFixed(2)}</span></p>
+                        {p.descricao_alteracoes && (
+                          <p className="md:col-span-2 truncate max-w-md">Alterações: <span className="text-foreground">{p.descricao_alteracoes}</span></p>
+                        )}
+                      </>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
@@ -242,21 +386,37 @@ const MeusPedidos = () => {
         <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Pedido #{selectedPedido?.id}</DialogTitle>
-            <DialogDescription>Detalhes do pedido</DialogDescription>
+            <DialogDescription>
+              {selectedPedido ? getTypeLabel(selectedPedido.type) : 'Detalhes do pedido'}
+            </DialogDescription>
           </DialogHeader>
           {selectedPedido && (
             <div className="space-y-4 text-sm">
               <StatusTracker pedido={selectedPedido} />
 
               <div className="grid grid-cols-2 gap-2">
-                <span className="text-muted-foreground">CPF:</span><span className="font-mono">{selectedPedido.cpf}</span>
-                {selectedPedido.nome && <><span className="text-muted-foreground">Nome:</span><span>{selectedPedido.nome}</span></>}
-                {selectedPedido.dt_nascimento && <><span className="text-muted-foreground">Nascimento:</span><span>{formatDateBR(selectedPedido.dt_nascimento)}</span></>}
-                {selectedPedido.naturalidade && <><span className="text-muted-foreground">Naturalidade:</span><span>{selectedPedido.naturalidade}</span></>}
-                {selectedPedido.filiacao_mae && <><span className="text-muted-foreground">Mãe:</span><span>{selectedPedido.filiacao_mae}</span></>}
-                {selectedPedido.filiacao_pai && <><span className="text-muted-foreground">Pai:</span><span>{selectedPedido.filiacao_pai}</span></>}
-                {selectedPedido.diretor && <><span className="text-muted-foreground">Diretor:</span><span>{selectedPedido.diretor}</span></>}
-                <span className="text-muted-foreground">QR Code:</span><span>{selectedPedido.qr_plan?.toUpperCase()}</span>
+                {selectedPedido.type === 'pdf-rg' ? (
+                  <>
+                    {selectedPedido.cpf && <><span className="text-muted-foreground">CPF:</span><span className="font-mono">{selectedPedido.cpf}</span></>}
+                    {selectedPedido.nome && <><span className="text-muted-foreground">Nome:</span><span>{selectedPedido.nome}</span></>}
+                    {selectedPedido.dt_nascimento && <><span className="text-muted-foreground">Nascimento:</span><span>{formatDateBR(selectedPedido.dt_nascimento)}</span></>}
+                    {selectedPedido.naturalidade && <><span className="text-muted-foreground">Naturalidade:</span><span>{selectedPedido.naturalidade}</span></>}
+                    {selectedPedido.filiacao_mae && <><span className="text-muted-foreground">Mãe:</span><span>{selectedPedido.filiacao_mae}</span></>}
+                    {selectedPedido.filiacao_pai && <><span className="text-muted-foreground">Pai:</span><span>{selectedPedido.filiacao_pai}</span></>}
+                    {selectedPedido.diretor && <><span className="text-muted-foreground">Diretor:</span><span>{selectedPedido.diretor}</span></>}
+                    {selectedPedido.qr_plan && <><span className="text-muted-foreground">QR Code:</span><span>{selectedPedido.qr_plan.toUpperCase()}</span></>}
+                  </>
+                ) : (
+                  <>
+                    {selectedPedido.nome_solicitante && <><span className="text-muted-foreground">Solicitante:</span><span>{selectedPedido.nome_solicitante}</span></>}
+                    {selectedPedido.descricao_alteracoes && (
+                      <>
+                        <span className="text-muted-foreground col-span-2">Descrição das alterações:</span>
+                        <span className="col-span-2 whitespace-pre-wrap text-foreground bg-muted/50 rounded p-2">{selectedPedido.descricao_alteracoes}</span>
+                      </>
+                    )}
+                  </>
+                )}
                 <span className="text-muted-foreground">Valor:</span><span>R$ {Number(selectedPedido.preco_pago || 0).toFixed(2)}</span>
                 <span className="text-muted-foreground">Data:</span><span>{formatFullDate(selectedPedido.created_at)}</span>
               </div>
