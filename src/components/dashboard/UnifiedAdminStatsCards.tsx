@@ -356,24 +356,24 @@ const UnifiedAdminStatsCards: React.FC<UnifiedAdminStatsCardsProps> = ({ dashboa
 
   const pedidosData = [
     {
-      title: "Pedidos Pendentes",
-      rawValue: pedidoStats.pendentes,
-      isCurrency: false,
-      icon: ClipboardList,
-      bgColor: "bg-amber-500/10",
-      iconColor: "text-amber-600 dark:text-amber-400",
-      description: "Aguardando produção",
-      path: "/dashboard/admin/pedidos"
-    },
-    {
       title: "Pedidos Aprovados",
       rawValue: pedidoStats.aprovados,
       isCurrency: false,
       icon: CheckCircle,
       bgColor: "bg-blue-500/10",
       iconColor: "text-blue-600 dark:text-blue-400",
-      description: "Em confecção",
-      path: "/dashboard/admin/pedidos"
+      description: "Aguardando produção",
+      path: "/dashboard/admin/pedidos?status=pagamento_confirmado"
+    },
+    {
+      title: "Em Confecção",
+      rawValue: pedidoStats.pendentes,
+      isCurrency: false,
+      icon: ClipboardList,
+      bgColor: "bg-amber-500/10",
+      iconColor: "text-amber-600 dark:text-amber-400",
+      description: "Em processo de confecção",
+      path: "/dashboard/admin/pedidos?status=em_confeccao"
     },
     {
       title: "Pedidos Finalizados",
@@ -383,7 +383,7 @@ const UnifiedAdminStatsCards: React.FC<UnifiedAdminStatsCardsProps> = ({ dashboa
       bgColor: "bg-emerald-500/10",
       iconColor: "text-emerald-600 dark:text-emerald-400",
       description: "Entregues ao cliente",
-      path: "/dashboard/admin/pedidos"
+      path: "/dashboard/admin/pedidos?status=entregue"
     },
     {
       title: "Total de Pedidos",
