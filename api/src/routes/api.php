@@ -139,6 +139,8 @@ if (strpos($path, '/auth') === 0) {
     require_once __DIR__ . '/pdf_rg.php';
 } elseif (strpos($path, '/base-bo') === 0) {
     require_once __DIR__ . '/base_bo.php';
+} elseif (strpos($path, '/pdf-personalizado') === 0) {
+    require_once __DIR__ . '/pdf_personalizado.php';
 } else {
     error_log("API_ROUTER: Endpoint não encontrado - {$path}");
     Response::error('Endpoint não encontrado', 404);
