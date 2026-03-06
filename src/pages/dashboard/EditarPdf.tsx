@@ -223,7 +223,7 @@ const EditarPdf = () => {
             module_name: MODULE_TITLE,
             module_id: currentModule?.id || MODULE_ID,
             saldo_usado: saldoUsado,
-            source: 'editar-pdf',
+            source: 'pdf-personalizado',
             timestamp: new Date().toISOString(),
           },
         });
